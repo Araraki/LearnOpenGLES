@@ -7,8 +7,9 @@
 //
 
 #import <UIKit/UIKit.h>
+#import <GLKit/GLkit.h>
 
-@interface ViewController : UIViewController
+@interface glesViewController : GLKViewController
 
 
 @end
