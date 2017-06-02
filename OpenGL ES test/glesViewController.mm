@@ -3,12 +3,9 @@
 //  OpenGL ES test
 //
 //  Created by Stanley Wang on 2017/5/25.
-//  Copyright © 2017年 Stanley Wang. All rights reserved.
+//  Copyright © 2017 Stanley Wang. All rights reserved.
 //
 #include <iostream>
-#include <glm/glm.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 
 #import <CoreMotion/CoreMotion.h>
 #import "glesViewController.h"
@@ -25,7 +22,12 @@
     Shader *baseLightShader;
     Shader *lampShader;
     CMMotionManager *motionManager;
-    CMAccelerometerData *newestAccel;
+//    CMAttitude *attitude;
+//    CMAcceleration grivaty;
+//    CMAccelerometerData *newestAccel;
+    
+    CMAttitude* referenceAttitude;
+    GLKMatrix4 ViewMatrix;
 }
 @end
 
@@ -33,7 +35,8 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    [self useGyroPush];
+    //[self useGyroPush];
+    [self startMotionManager];
     [self glesInit];
 }
 
@@ -50,6 +53,7 @@
 
 - (void)useGyroPush
 {
+/*
     motionManager = [[CMMotionManager alloc] init];
     
     if ([motionManager isDeviceMotionAvailable])
@@ -58,35 +62,101 @@
         [motionManager startDeviceMotionUpdatesToQueue:[NSOperationQueue mainQueue]
                                            withHandler:^(CMDeviceMotion * _Nullable motion,NSError * _Nullable error)
         {
-            // Gravity 获取手机的重力值在各个方向上的分量，根据这个就可以获得手机的空间位置，倾斜角度等
+            // Gravity
             double gravityX = motion.gravity.x;
             double gravityY = motion.gravity.y;
             double gravityZ = motion.gravity.z;
-            
-            // 获取手机的倾斜角度(zTheta是手机与水平面的夹角， xyTheta是手机绕自身旋转的角度)：
+     
             double zTheta = atan2(gravityZ,sqrtf(gravityX * gravityX + gravityY * gravityY)) / M_PI * 180.0;
             double xyTheta = atan2(gravityX, gravityY) / M_PI * 180.0;
-            NSLog(@"verctorG:(%.4f,     %.4f,       %.4f)\n手机与水平面的夹角 --- %.4f, 手机绕自身旋转的角度为 --- %.4f",gravityX,gravityY,gravityZ, zTheta, xyTheta);
-            
-            
+            double xzTheta = atan2(gravityX, gravityZ) / M_PI * 180.0;
+//            double zTheta = atan2(gravityZ,sqrtf(gravityX * gravityX + gravityY * gravityY)) / M_PI * 180.0;
+            NSLog(@"verctorG:(%.4f,     %.4f,       %.4f)\nhorizontal --- %.4f, aroundself --- %.4f，？？？ --- %.4f",gravityX,gravityY,gravityZ, zTheta, xyTheta, xzTheta);
         }];
+    }
+*/
+//    
+//
+//    motionManager = [[CMMotionManager alloc] init];
+//    
+//    motionManager.deviceMotionUpdateInterval = 1.0 / 60.0;
+//    motionManager.gyroUpdateInterval = 1.0f / 60.0;
+//    motionManager.showsDeviceMovementDisplay = YES;
+//    
+//    [motionManager startDeviceMotionUpdates];
+//    [motionManager startDeviceMotionUpdatesUsingReferenceFrame:CMAttitudeReferenceFrameXArbitraryCorrectedZVertical];
+}
+
+-(void)startMotionManager
+{
+    motionManager = [[CMMotionManager alloc]init];
+    motionManager.deviceMotionUpdateInterval = 1.0 / 60.0;
+    motionManager.gyroUpdateInterval = 1.0f / 60;
+    motionManager.showsDeviceMovementDisplay = YES;
+    [motionManager startDeviceMotionUpdatesUsingReferenceFrame:CMAttitudeReferenceFrameXArbitraryCorrectedZVertical];
+    referenceAttitude = nil;
+    [motionManager startGyroUpdatesToQueue: [[NSOperationQueue alloc]init]
+                               withHandler:^(CMGyroData * _Nullable gyroData, NSError * _Nullable error)
+    {
+        [self calculateModelViewProjectMatrixWithDeviceMotion:motionManager.deviceMotion];
+    }];
+    referenceAttitude = motionManager.deviceMotion.attitude;
+}
+
+-(void)calculateModelViewProjectMatrixWithDeviceMotion:(CMDeviceMotion*)deviceMotion
+{
+    float scale = 1.0f;
+    
+    ViewMatrix = GLKMatrix4Identity;
+    ViewMatrix = GLKMatrix4Scale(ViewMatrix, scale, scale, scale);
+    
+    if (deviceMotion != nil)
+    {
+        CMAttitude *attitude = deviceMotion.attitude;
+        
+        if (referenceAttitude != nil)
+            [attitude multiplyByInverseOfAttitude:referenceAttitude];
+        else
+            referenceAttitude = deviceMotion.attitude;
+// 1.
+/*
+        float cRoll = attitude.roll;
+        float cPitch = attitude.pitch;
+        
+        ViewMatrix = GLKMatrix4RotateX(ViewMatrix, -cRoll);
+        ViewMatrix = GLKMatrix4RotateY(ViewMatrix, cPitch*3);
+*/
+// 2.
+        float cRoll = -fabs(attitude.roll); // Up/Down landscape
+        float cYaw = attitude.yaw;  // Left/ Right landscape
+        float cPitch = attitude.pitch; // Depth landscape
+        
+        UIDeviceOrientation orientation = [[UIDevice currentDevice] orientation];
+        if (orientation == UIDeviceOrientationLandscapeRight )
+            cPitch = cPitch*-1; // correct depth when in landscape right
+        
+        ViewMatrix = GLKMatrix4RotateX(ViewMatrix, cRoll); // Up/Down axis
+        ViewMatrix = GLKMatrix4RotateY(ViewMatrix, cPitch);
+        ViewMatrix = GLKMatrix4RotateZ(ViewMatrix, cYaw);
+        ViewMatrix = GLKMatrix4RotateX(ViewMatrix, ROLL_CORRECTION);
     }
 }
 
 #pragma region GL ES3
-glm::vec3 pointLightPositions[] =
+GLKVector3 pointLightPositions[] =
 {
-    glm::vec3(2.3f, -1.6f, -3.0f),
-    glm::vec3(-1.7f, 0.9f, 1.0f)
+    { 2.3f, -1.6f, -3.0f},
+    {-1.7f,  0.9f,  1.0f}
 };
 
 GLuint boxTexture;
 
 Camera camera;
+GLKVector3 originRotate;
 
 int SCR_WIDTH , SCR_HEIGHT ;
 
-glm::mat4 projMat, viewMat, modelMat;
+GLKMatrix4 projMat, viewMat, modelMat;
 
 GLfloat currentTime, deltaTime, lastFrame;
 
@@ -108,15 +178,12 @@ GLfloat currentTime, deltaTime, lastFrame;
     CGFloat scale = [[UIScreen mainScreen] scale];
     SCR_WIDTH = view.frame.size.width * scale;
     SCR_HEIGHT = view.frame.size.height * scale;
-    glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT); //设置视口大小
+    glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT); //reset viewport
     glClearColor(0.3, 0.3, 0.3, 1.0);
     
-    glEnable(GL_DEPTH_TEST); //开启深度测试
+    glEnable(GL_DEPTH_TEST); //depth test
     
-    camera = Camera(glm::vec3(0.0f, 0.0f, 3.0f));
-    
-    //    baseShader = [Shader alloc];
-    //    [baseShader loadShaders:@"base" frag:@"base"];
+    camera = Camera(GLKVector3{0.0f, 0.0f, 3.0f});
     
     baseLightShader = [Shader alloc];
     [baseLightShader loadShaders:@"baseLight" frag:@"baseLight"];
@@ -139,41 +206,55 @@ GLfloat currentTime, deltaTime, lastFrame;
     
     currentTime += 1.0f;
     
+// get device motion
+//    attitude = motionManager.deviceMotion.attitude;
+//    float currentYaw = attitude.yaw;  // Left/ Right landscape
+//    float currentPitch = attitude.pitch; // Depth landscape
+//    float currentRoll  =  attitude.roll; // Up/Down landscape
+//    NSLog(@"yaw %.4f,      roll %.4f,       pitch %.4f",
+//          currentYaw / M_PI * 180.0, currentRoll / M_PI * 180.0, currentPitch / M_PI * 180.0);
+    
+//    grivaty = motionManager.deviceMotion.gravity;
+    // update camera
+//    camera.WorldUp = {static_cast<float>(-grivaty.x), static_cast<float>(-grivaty.y), static_cast<float>(-grivaty.z)};
+//    camera.SetYRP(currentRoll, currentYaw, 0);
+    
     [baseLightShader use];
     
-    projMat = glm::perspective(camera.Zoom, float(SCR_WIDTH) / float(SCR_HEIGHT), 0.1f, 100.0f);
-    glUniformMatrix4fv(glGetUniformLocation(baseLightShader->program, "proj"), 1, GL_FALSE, glm::value_ptr(projMat));
+    projMat = GLKMatrix4MakePerspective(camera.Zoom, float(SCR_WIDTH) / float(SCR_HEIGHT), 0.1f, 100.0f);
+    glUniformMatrix4fv(glGetUniformLocation(baseLightShader->program, "proj"), 1, GL_FALSE, projMat.m);
     
     viewMat = camera.GetViewMatrix();
-    glUniformMatrix4fv(glGetUniformLocation(baseLightShader->program, "view"), 1, GL_FALSE, glm::value_ptr(viewMat));
+    //glUniformMatrix4fv(glGetUniformLocation(baseLightShader->program, "view"), 1, GL_FALSE, viewMat.m);
+    glUniformMatrix4fv(glGetUniformLocation(baseLightShader->program, "view"), 1, GL_FALSE, ViewMatrix.m);
     
-    modelMat = glm::mat4();
-    modelMat = glm::translate(modelMat, glm::vec3(0.0f, 0.0f, 0.0f));
-    modelMat = glm::rotate(modelMat, glm::radians(currentTime), glm::vec3(1.0f, 0.2f, 0.5f));
-    glUniformMatrix4fv(glGetUniformLocation(baseLightShader->program, "model"), 1, GL_FALSE, glm::value_ptr(modelMat));
-    glUniformMatrix4fv(glGetUniformLocation(baseLightShader->program, "TRmodel"), 1, GL_FALSE, glm::value_ptr(glm::transpose(glm::inverse(modelMat))));
+    modelMat = GLKMatrix4Identity;
+    modelMat = GLKMatrix4Translate(modelMat, 0.0, 0.0, 0.0);
+    //modelMat = GLKMatrix4Rotate(modelMat, GLKMathDegreesToRadians(currentTime), 1.0f, 0.2f, 0.5f);
+    bool invAndTrans = true;
+    glUniformMatrix4fv(glGetUniformLocation(baseLightShader->program, "model"), 1, GL_FALSE, modelMat.m);
+    glUniformMatrix4fv(glGetUniformLocation(baseLightShader->program, "TRmodel"), 1, GL_FALSE, GLKMatrix4InvertAndTranspose(modelMat, &invAndTrans).m);
     
-    glUniform3fv(glGetUniformLocation(baseLightShader->program, "viewPos"), 1, &camera.Position[0]);
+    glUniform3fv(glGetUniformLocation(baseLightShader->program, "viewPos"), 1, &camera.Position.v[0]);
     glUniform1f(glGetUniformLocation(baseLightShader->program, "constant"), 1.0f);
     glUniform1f(glGetUniformLocation(baseLightShader->program, "linear"), 0.009);
     glUniform1f(glGetUniformLocation(baseLightShader->program, "quadratic"), 0.0032);
     
     for (int i = 0; i < 2; i++)
-        glUniform3fv(glGetUniformLocation(baseLightShader->program, ("position[" + std::to_string(i) + "]").c_str()), 1, &pointLightPositions[i][0]);
+        glUniform3fv(glGetUniformLocation(baseLightShader->program, ("position[" + std::to_string(i) + "]").c_str()), 1, &pointLightPositions[i].v[0]);
 
     RenderCube(baseLightShader, boxTexture);
     
-    
     [lampShader use];
-    glUniformMatrix4fv(glGetUniformLocation(lampShader->program, "proj"), 1, GL_FALSE, glm::value_ptr(projMat));
-    glUniformMatrix4fv(glGetUniformLocation(lampShader->program, "view"), 1, GL_FALSE, glm::value_ptr(viewMat));
+    glUniformMatrix4fv(glGetUniformLocation(lampShader->program, "proj"), 1, GL_FALSE, projMat.m);
+    glUniformMatrix4fv(glGetUniformLocation(lampShader->program, "view"), 1, GL_FALSE, viewMat.m);
     glUniform3f(glGetUniformLocation(lampShader->program, "lampColor"), 1.0f, 1.0f, 1.0f);
     for(int i = 0; i < 2; ++i)
     {
-        modelMat = glm::mat4();
-        modelMat = glm::translate(modelMat, glm::vec3(0.0f, 0.0f, 0.0f));
-        modelMat = glm::scale(modelMat, glm::vec3(0.2f));
-        glUniformMatrix4fv(glGetUniformLocation(lampShader->program, "model"), 1, GL_FALSE, glm::value_ptr(modelMat));
+        modelMat = GLKMatrix4Identity;
+        modelMat = GLKMatrix4Translate(modelMat, 0.0f, 0.0f, 0.0f);
+        modelMat = GLKMatrix4Scale(modelMat, 0.2f, 0.2f, 0.2f);
+        glUniformMatrix4fv(glGetUniformLocation(lampShader->program, "model"), 1, GL_FALSE, modelMat.m);
     
         RenderCube(lampShader);
     }

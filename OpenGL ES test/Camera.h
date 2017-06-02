@@ -1,75 +1,80 @@
 #pragma once
 #import <OpenGLES/ES3/gl.h>
 #import <OpenGLES/ES3/glext.h>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 
-const GLfloat YAW			= -90.0f;
+const GLfloat YAW			= 0.0f;
+const GLfloat ROLL			= 90.0f;
 const GLfloat PITCH			= 0.0f;
-const GLfloat ROLL			= 0.0f;
-const GLfloat SPEED			= 3.0f;
-const GLfloat SENSITIVTY	= 0.05f;
+const GLfloat ROLL_CORRECTION = 3.14159265 /2.0;
+
+
 const GLfloat ZOOM			= 45.0f;
+
+const GLKVector3 FRONT = {0.0f, 0.0f, -1.0f};
+const GLKVector3 UP = {0.0f, 1.0f, 0.0f};
+const GLKVector3 RIGHT = {0.0f, 0.0f, 1.0f};
 
 class Camera
 {
 public:
-	glm::vec3 Position;
-	glm::vec3 Front;
-	glm::vec3 Up;
-	glm::vec3 Right;
+	GLKVector3 Position;
+    
+    GLKVector3 Front;
+    GLKVector3 Right;
+    GLKVector3 Up;
 
-	glm::vec3 WorldUp;
-    glm::vec3 WorldFront;
-    glm::vec3 WorldRight;
-
+	GLKVector3 WorldUp;
+    
 	GLfloat Yaw;
-	GLfloat Pitch;
-    GLfloat Roll;
+	GLfloat Roll;
+    GLfloat Pitch;
 
-	GLfloat MovementSpeed;
 	GLfloat Zoom;
 
-	Camera(glm::vec3 pos = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f),
-		   GLfloat yaw = YAW, GLfloat pitch = PITCH, GLfloat roll = ROLL)
-		: Front(glm::vec3(0.0f, 0.0f, -1.0f)), Zoom(ZOOM)
+    Camera(GLKVector3 pos = {0.0f, 0.0f, 0.0f}, GLKVector3 up = {0.0f, 1.0f, 0.0f},
+		   GLfloat yaw = YAW, GLfloat roll = ROLL, GLfloat pitch = PITCH)
+		: Front(FRONT), Up(UP), Zoom(ZOOM)
 	{
-		this->Position = pos;
-		this->WorldUp = up;
-		this->Yaw = yaw;
-		this->Pitch = pitch;
-        this->Roll = roll;
-		this->updateCameraVectors();
-	}
-
-	glm::mat4 GetViewMatrix() const
-	{
-		return glm::lookAt(this->Position, this->Position + this->Front, this->Up);
-	}
-
-	void ProcessGyroMovement(GLfloat eX, GLfloat eY, GLfloat eZ)
-	{
-        this->Yaw += eX;
-        this->Pitch += eY;
-        this->Roll += eZ;
+		Position = pos;
+		WorldUp = up;
         
-        //this->WorldUp = glm::vec3(-gX, -gY, -gZ);
+		Yaw = yaw;
+		Roll = roll;
+        Pitch = pitch;
+        
+		updateCameraVectors();
+	}
 
-		this->updateCameraVectors();
+	GLKMatrix4 GetViewMatrix() const
+	{
+        GLKVector3 center = GLKVector3Add(Position, Front);
+		return GLKMatrix4MakeLookAt(Position.x,   Position.y,   Position.z,
+                                    center.x,     center.y,     center.z,
+                                    Up.x,         Up.y,         Up.z        );
+	}
+
+	void SetYRP(GLfloat yaw, GLfloat roll , GLfloat pitch)
+	{
+        Yaw = -yaw;
+        Roll = -roll;
+        Pitch = pitch;
+        
+        updateCameraVectors();
 	}
 
 private:
+    
 	void updateCameraVectors()
 	{
-		glm::vec3 front;
+		GLKVector3 front;
 
-		front.x = cos(glm::radians(this->Yaw)) * cos(glm::radians(this->Pitch));
-		front.y = sin(glm::radians(this->Pitch));
-		front.z = sin(glm::radians(this->Yaw)) * cos(glm::radians(this->Pitch));
+		front.x = cos(Yaw) * cos(Roll);
+		front.y = sin(Roll);
+		front.z = sin(Yaw) * cos(Roll);
 
-		this->Front = glm::normalize(front);
-		this->Right = glm::normalize(glm::cross(this->Front, this->WorldUp));
-		this->Up = glm::normalize(glm::cross(this->Right, this->Front));
+		Front = GLKVector3Normalize(front);
+        Right = GLKVector3Normalize(GLKVector3CrossProduct(Front, WorldUp));
+		Up = GLKVector3Normalize(GLKVector3CrossProduct(Right, Front));
 	}
 };
 
