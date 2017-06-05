@@ -7,7 +7,6 @@
 //
 #include <iostream>
 
-#import <CoreMotion/CoreMotion.h>
 #import "glesViewController.h"
 
 #import "RenderFigure.h"
@@ -21,13 +20,6 @@
 //    Shader *baseShader;
     Shader *baseLightShader;
     Shader *lampShader;
-    CMMotionManager *motionManager;
-//    CMAttitude *attitude;
-//    CMAcceleration grivaty;
-//    CMAccelerometerData *newestAccel;
-    
-    CMAttitude* referenceAttitude;
-    GLKMatrix4 ViewMatrix;
 }
 @end
 
@@ -35,8 +27,6 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    //[self useGyroPush];
-    [self startMotionManager];
     [self glesInit];
 }
 
@@ -49,97 +39,6 @@
 - (BOOL)prefersStatusBarHidden
 {
     return YES;
-}
-
-- (void)useGyroPush
-{
-/*
-    motionManager = [[CMMotionManager alloc] init];
-    
-    if ([motionManager isDeviceMotionAvailable])
-    {
-        motionManager.deviceMotionUpdateInterval = 0.005f;
-        [motionManager startDeviceMotionUpdatesToQueue:[NSOperationQueue mainQueue]
-                                           withHandler:^(CMDeviceMotion * _Nullable motion,NSError * _Nullable error)
-        {
-            // Gravity
-            double gravityX = motion.gravity.x;
-            double gravityY = motion.gravity.y;
-            double gravityZ = motion.gravity.z;
-     
-            double zTheta = atan2(gravityZ,sqrtf(gravityX * gravityX + gravityY * gravityY)) / M_PI * 180.0;
-            double xyTheta = atan2(gravityX, gravityY) / M_PI * 180.0;
-            double xzTheta = atan2(gravityX, gravityZ) / M_PI * 180.0;
-//            double zTheta = atan2(gravityZ,sqrtf(gravityX * gravityX + gravityY * gravityY)) / M_PI * 180.0;
-            NSLog(@"verctorG:(%.4f,     %.4f,       %.4f)\nhorizontal --- %.4f, aroundself --- %.4f，？？？ --- %.4f",gravityX,gravityY,gravityZ, zTheta, xyTheta, xzTheta);
-        }];
-    }
-*/
-//    
-//
-//    motionManager = [[CMMotionManager alloc] init];
-//    
-//    motionManager.deviceMotionUpdateInterval = 1.0 / 60.0;
-//    motionManager.gyroUpdateInterval = 1.0f / 60.0;
-//    motionManager.showsDeviceMovementDisplay = YES;
-//    
-//    [motionManager startDeviceMotionUpdates];
-//    [motionManager startDeviceMotionUpdatesUsingReferenceFrame:CMAttitudeReferenceFrameXArbitraryCorrectedZVertical];
-}
-
--(void)startMotionManager
-{
-    motionManager = [[CMMotionManager alloc]init];
-    motionManager.deviceMotionUpdateInterval = 1.0 / 60.0;
-    motionManager.gyroUpdateInterval = 1.0f / 60;
-    motionManager.showsDeviceMovementDisplay = YES;
-    [motionManager startDeviceMotionUpdatesUsingReferenceFrame:CMAttitudeReferenceFrameXArbitraryCorrectedZVertical];
-    referenceAttitude = nil;
-    [motionManager startGyroUpdatesToQueue: [[NSOperationQueue alloc]init]
-                               withHandler:^(CMGyroData * _Nullable gyroData, NSError * _Nullable error)
-    {
-        [self calculateModelViewProjectMatrixWithDeviceMotion:motionManager.deviceMotion];
-    }];
-    referenceAttitude = motionManager.deviceMotion.attitude;
-}
-
--(void)calculateModelViewProjectMatrixWithDeviceMotion:(CMDeviceMotion*)deviceMotion
-{
-    float scale = 1.0f;
-    
-    ViewMatrix = GLKMatrix4Identity;
-    ViewMatrix = GLKMatrix4Scale(ViewMatrix, scale, scale, scale);
-    
-    if (deviceMotion != nil)
-    {
-        CMAttitude *attitude = deviceMotion.attitude;
-        
-        if (referenceAttitude != nil)
-            [attitude multiplyByInverseOfAttitude:referenceAttitude];
-        else
-            referenceAttitude = deviceMotion.attitude;
-// 1.
-/*
-        float cRoll = attitude.roll;
-        float cPitch = attitude.pitch;
-        
-        ViewMatrix = GLKMatrix4RotateX(ViewMatrix, -cRoll);
-        ViewMatrix = GLKMatrix4RotateY(ViewMatrix, cPitch*3);
-*/
-// 2.
-        float cRoll = -fabs(attitude.roll); // Up/Down landscape
-        float cYaw = attitude.yaw;  // Left/ Right landscape
-        float cPitch = attitude.pitch; // Depth landscape
-        
-        UIDeviceOrientation orientation = [[UIDevice currentDevice] orientation];
-        if (orientation == UIDeviceOrientationLandscapeRight )
-            cPitch = cPitch*-1; // correct depth when in landscape right
-        
-        ViewMatrix = GLKMatrix4RotateX(ViewMatrix, cRoll); // Up/Down axis
-        ViewMatrix = GLKMatrix4RotateY(ViewMatrix, cPitch);
-        ViewMatrix = GLKMatrix4RotateZ(ViewMatrix, cYaw);
-        ViewMatrix = GLKMatrix4RotateX(ViewMatrix, ROLL_CORRECTION);
-    }
 }
 
 #pragma region GL ES3
@@ -184,6 +83,7 @@ GLfloat currentTime, deltaTime, lastFrame;
     glEnable(GL_DEPTH_TEST); //depth test
     
     camera = Camera(GLKVector3{0.0f, 0.0f, 3.0f});
+    camera.InitCameraCtrl();
     
     baseLightShader = [Shader alloc];
     [baseLightShader loadShaders:@"baseLight" frag:@"baseLight"];
@@ -206,19 +106,7 @@ GLfloat currentTime, deltaTime, lastFrame;
     
     currentTime += 1.0f;
     
-// get device motion
-//    attitude = motionManager.deviceMotion.attitude;
-//    float currentYaw = attitude.yaw;  // Left/ Right landscape
-//    float currentPitch = attitude.pitch; // Depth landscape
-//    float currentRoll  =  attitude.roll; // Up/Down landscape
-//    NSLog(@"yaw %.4f,      roll %.4f,       pitch %.4f",
-//          currentYaw / M_PI * 180.0, currentRoll / M_PI * 180.0, currentPitch / M_PI * 180.0);
-    
-//    grivaty = motionManager.deviceMotion.gravity;
-    // update camera
-//    camera.WorldUp = {static_cast<float>(-grivaty.x), static_cast<float>(-grivaty.y), static_cast<float>(-grivaty.z)};
-//    camera.SetYRP(currentRoll, currentYaw, 0);
-    
+
     [baseLightShader use];
     
     projMat = GLKMatrix4MakePerspective(camera.Zoom, float(SCR_WIDTH) / float(SCR_HEIGHT), 0.1f, 100.0f);
@@ -226,11 +114,11 @@ GLfloat currentTime, deltaTime, lastFrame;
     
     viewMat = camera.GetViewMatrix();
     //glUniformMatrix4fv(glGetUniformLocation(baseLightShader->program, "view"), 1, GL_FALSE, viewMat.m);
-    glUniformMatrix4fv(glGetUniformLocation(baseLightShader->program, "view"), 1, GL_FALSE, ViewMatrix.m);
+    glUniformMatrix4fv(glGetUniformLocation(baseLightShader->program, "view"), 1, GL_FALSE, viewMat.m);
     
     modelMat = GLKMatrix4Identity;
     modelMat = GLKMatrix4Translate(modelMat, 0.0, 0.0, 0.0);
-    //modelMat = GLKMatrix4Rotate(modelMat, GLKMathDegreesToRadians(currentTime), 1.0f, 0.2f, 0.5f);
+    modelMat = GLKMatrix4Rotate(modelMat, GLKMathDegreesToRadians(currentTime), 1.0f, 0.2f, 0.5f);
     bool invAndTrans = true;
     glUniformMatrix4fv(glGetUniformLocation(baseLightShader->program, "model"), 1, GL_FALSE, modelMat.m);
     glUniformMatrix4fv(glGetUniformLocation(baseLightShader->program, "TRmodel"), 1, GL_FALSE, GLKMatrix4InvertAndTranspose(modelMat, &invAndTrans).m);
