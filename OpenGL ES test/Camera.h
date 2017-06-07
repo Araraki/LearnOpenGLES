@@ -34,7 +34,7 @@ public:
     
     CMMotionManager *motionManager;
 
-    Camera(GLKVector3 pos = {0.0f, 0.0f, 0.0f}, GLKVector3 worldup = {0.0f, 1.0f, 0.0f},
+    Camera(GLKVector3 pos = {0.0f, 0.0f, 0.0f}, GLKVector3 worldup = {-1.0f, 0.0f, 0.0f},
 		   GLfloat yaw = YAW, GLfloat roll = ROLL, GLfloat pitch = PITCH) : Zoom(ZOOM)
 	{
 		Position = pos;
@@ -74,6 +74,7 @@ public:
 
         //GLKMatrix4 viewMat4 = GLKMatrix4Multiply(baseRotation, rotateMat4);
         //viewMat4 = GLKMatrix4Multiply(transMat4, viewMat4);
+        //GLKMatrix4 viewMat4 = GLKMatrix4Multiply(GLKMatrix4Multiply(GLKMatrix4Identity, baseRotation), rotateMat4);
         GLKMatrix4 viewMat4 = GLKMatrix4Multiply(GLKMatrix4Multiply(GLKMatrix4Multiply(GLKMatrix4Identity, baseRotation), rotateMat4), transMat42);
 //        viewMat4= GLKMatrix4MakeLookAt(Position.x, Position.y, Position.z,
 //                                       Position.x + Front.x, Position.y + Front.y, Position.z + Front.z,

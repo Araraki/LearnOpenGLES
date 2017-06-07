@@ -49,6 +49,8 @@
 		BC8FCD101ED84B0E00AF077A /* Camera.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Camera.h; sourceTree = "<group>"; };
 		BC8FCD111ED8652000AF077A /* lamp.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = lamp.frag; sourceTree = "<group>"; };
 		BC8FCD121ED8652000AF077A /* lamp.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = lamp.vert; sourceTree = "<group>"; };
+		BCBB976C1EE8020B001F08D8 /* Mesh.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Mesh.h; sourceTree = "<group>"; };
+		BCBB976D1EE8020B001F08D8 /* Model.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Model.h; sourceTree = "<group>"; };
 		BCDEAD7C1ED92FC2009DEAA2 /* CoreMotion.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMotion.framework; path = System/Library/Frameworks/CoreMotion.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -125,6 +127,8 @@
 			children = (
 				BC6C97831ED6BE1800C28E41 /* RenderFigure.h */,
 				BC8FCD101ED84B0E00AF077A /* Camera.h */,
+				BCBB976C1EE8020B001F08D8 /* Mesh.h */,
+				BCBB976D1EE8020B001F08D8 /* Model.h */,
 				BC6C97891ED6C28300C28E41 /* Shader.h */,
 				BC6C978A1ED6CCD400C28E41 /* Texture.h */,
 			);

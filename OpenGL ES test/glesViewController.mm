@@ -13,6 +13,7 @@
 #import "Shader.h"
 #import "Texture.h"
 #import "Camera.h"
+#import "Model.h"
 
 @interface glesViewController ()<GLKViewDelegate>
 {
@@ -82,7 +83,7 @@ GLfloat currentTime, deltaTime, lastFrame;
     
     glEnable(GL_DEPTH_TEST); //depth test
     
-    camera = Camera(GLKVector3{0.0f, 0.0f, 3.0f});
+    camera = Camera(GLKVector3{3.0f, 0.0f, 0.0f});
     camera.InitCameraCtrl();
     
     baseLightShader = [Shader alloc];
