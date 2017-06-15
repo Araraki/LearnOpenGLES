@@ -61,10 +61,10 @@ public:
                                                0.0f,    0.0f,   0.0f,   1.0f);
         NSLog(@"\n%.4f, %.4f, %.4f\n%.4f, %.4f, %.4f\n%.4f, %.4f, %.4f", a.m11, a.m21, a.m31, a.m12, a.m22, a.m32, a.m13, a.m23,  a.m33);
         //GLKMatrix4 transMat4 = GLKMatrix4MakeTranslation(-Position.x, -Position.y, -Position.z);
-        GLKMatrix4 transMat4 = GLKMatrix4Make(1.0, 0.0, 0.0, -Position.x,
-                                              0.0, 1.0, 0.0, -Position.y,
-                                              0.0, 0.0, 1.0, -Position.z,
-                                              0.0, 0.0, 0.0, 1.0);
+//        GLKMatrix4 transMat4 = GLKMatrix4Make(1.0, 0.0, 0.0, -Position.x,
+//                                              0.0, 1.0, 0.0, -Position.y,
+//                                              0.0, 0.0, 1.0, -Position.z,
+//                                              0.0, 0.0, 0.0, 1.0);
         GLKMatrix4 transMat42 = GLKMatrix4Make(1.0, 0.0, 0.0, 0.0,
                                               0.0, 1.0, 0.0, 0.0,
                                               0.0, 0.0, 1.0, 0.0,

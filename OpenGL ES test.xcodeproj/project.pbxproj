@@ -15,6 +15,8 @@
 		BC42B80C1ED6B21A000B2726 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BC42B80A1ED6B21A000B2726 /* Main.storyboard */; };
 		BC42B80E1ED6B21A000B2726 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BC42B80D1ED6B21A000B2726 /* Assets.xcassets */; };
 		BC42B8111ED6B21A000B2726 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BC42B80F1ED6B21A000B2726 /* LaunchScreen.storyboard */; };
+		BC5C03121EF273E900BACB34 /* home_theater.fbx in Resources */ = {isa = PBXBuildFile; fileRef = BC5C03101EF273E900BACB34 /* home_theater.fbx */; };
+		BC5C03131EF273E900BACB34 /* home_theater_a.png in Resources */ = {isa = PBXBuildFile; fileRef = BC5C03111EF273E900BACB34 /* home_theater_a.png */; };
 		BC6C977F1ED6B45300C28E41 /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BC6C977E1ED6B45300C28E41 /* OpenGLES.framework */; };
 		BC6C97811ED6B45900C28E41 /* GLKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BC6C97801ED6B45900C28E41 /* GLKit.framework */; };
 		BC6C97921ED6E73500C28E41 /* box.png in Resources */ = {isa = PBXBuildFile; fileRef = BC6C97911ED6E73500C28E41 /* box.png */; };
@@ -38,6 +40,8 @@
 		BC42B80D1ED6B21A000B2726 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		BC42B8101ED6B21A000B2726 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		BC42B8121ED6B21A000B2726 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		BC5C03101EF273E900BACB34 /* home_theater.fbx */ = {isa = PBXFileReference; lastKnownFileType = file; path = home_theater.fbx; sourceTree = "<group>"; };
+		BC5C03111EF273E900BACB34 /* home_theater_a.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = home_theater_a.png; sourceTree = "<group>"; };
 		BC6C977E1ED6B45300C28E41 /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
 		BC6C97801ED6B45900C28E41 /* GLKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLKit.framework; path = System/Library/Frameworks/GLKit.framework; sourceTree = SDKROOT; };
 		BC6C97831ED6BE1800C28E41 /* RenderFigure.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RenderFigure.h; sourceTree = "<group>"; };
@@ -49,8 +53,6 @@
 		BC8FCD101ED84B0E00AF077A /* Camera.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Camera.h; sourceTree = "<group>"; };
 		BC8FCD111ED8652000AF077A /* lamp.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = lamp.frag; sourceTree = "<group>"; };
 		BC8FCD121ED8652000AF077A /* lamp.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = lamp.vert; sourceTree = "<group>"; };
-		BCBB976C1EE8020B001F08D8 /* Mesh.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Mesh.h; sourceTree = "<group>"; };
-		BCBB976D1EE8020B001F08D8 /* Model.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Model.h; sourceTree = "<group>"; };
 		BCDEAD7C1ED92FC2009DEAA2 /* CoreMotion.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMotion.framework; path = System/Library/Frameworks/CoreMotion.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -88,6 +90,7 @@
 		BC42B8001ED6B21A000B2726 /* OpenGL ES test */ = {
 			isa = PBXGroup;
 			children = (
+				BC5C030E1EF273CA00BACB34 /* Models */,
 				BC6C97901ED6E72900C28E41 /* Textures */,
 				BC6C978B1ED6DA3700C28E41 /* Shaders */,
 				BC6C97821ED6BDF100C28E41 /* Tools */,
@@ -112,6 +115,23 @@
 			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
+		BC5C030E1EF273CA00BACB34 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				BC5C030F1EF273E900BACB34 /* house */,
+			);
+			name = Models;
+			sourceTree = "<group>";
+		};
+		BC5C030F1EF273E900BACB34 /* house */ = {
+			isa = PBXGroup;
+			children = (
+				BC5C03101EF273E900BACB34 /* home_theater.fbx */,
+				BC5C03111EF273E900BACB34 /* home_theater_a.png */,
+			);
+			path = house;
+			sourceTree = "<group>";
+		};
 		BC6C977D1ED6B45300C28E41 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -127,8 +147,6 @@
 			children = (
 				BC6C97831ED6BE1800C28E41 /* RenderFigure.h */,
 				BC8FCD101ED84B0E00AF077A /* Camera.h */,
-				BCBB976C1EE8020B001F08D8 /* Mesh.h */,
-				BCBB976D1EE8020B001F08D8 /* Model.h */,
 				BC6C97891ED6C28300C28E41 /* Shader.h */,
 				BC6C978A1ED6CCD400C28E41 /* Texture.h */,
 			);
@@ -217,12 +235,14 @@
 			files = (
 				BC8FCD0F1ED84AE300AF077A /* baseLight.vert in Resources */,
 				BC42B8111ED6B21A000B2726 /* LaunchScreen.storyboard in Resources */,
+				BC5C03131EF273E900BACB34 /* home_theater_a.png in Resources */,
 				BC8FCD131ED8652000AF077A /* lamp.frag in Resources */,
 				BC42B80E1ED6B21A000B2726 /* Assets.xcassets in Resources */,
 				BC8FCD141ED8652000AF077A /* lamp.vert in Resources */,
 				BC413DB21ED6FEA300DAE6DE /* base.frag in Resources */,
 				BC413DB31ED6FEA300DAE6DE /* base.vert in Resources */,
 				BC8FCD0E1ED84AE300AF077A /* baseLight.frag in Resources */,
+				BC5C03121EF273E900BACB34 /* home_theater.fbx in Resources */,
 				BC6C97921ED6E73500C28E41 /* box.png in Resources */,
 				BC42B80C1ED6B21A000B2726 /* Main.storyboard in Resources */,
 			);

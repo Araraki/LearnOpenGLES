@@ -13,7 +13,6 @@
 #import "Shader.h"
 #import "Texture.h"
 #import "Camera.h"
-#import "Model.h"
 
 @interface glesViewController ()<GLKViewDelegate>
 {
